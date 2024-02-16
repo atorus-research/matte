@@ -1,0 +1,15 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Batch Job
+
+This is an batch job R Markdown document. 
+
+```{r batch_code}
+cat("Batch code to execute goes here")
+```
