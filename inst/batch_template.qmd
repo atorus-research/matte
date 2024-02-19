@@ -1,0 +1,12 @@
+---
+format: html
+---
+
+## Batch Job
+
+This is an batch job Quarto document. 
+
+```{r batch_code}
+cat("Batch code to execute goes here")
+```
+
