@@ -368,8 +368,12 @@ path_adam &lt;- &#39;/sasdata/Data/Development/BDM/R3767/R3767-ONC/R3767-ONC-201
 
 mtcars_new &lt;- mtcars %&gt;%
   mutate(mpg_rank = dense_rank(desc(mpg)),
-         hp_rank = dense_rank(desc(hp)))
+         hp_rank = dense_rank(desc(hp)),
+         am_fac = case_when(am == 0 ~ &quot;Automatic&quot;,
+                            am == 1 ~ &quot;Manual&quot;,
+                            T ~ NA_character_)) 
 
+mtcars_new$am_fac &lt;- factor(mtcars_new$am_fac, c(&quot;Automatic&quot;, &quot;Manual&quot;))
 
 if (Sys.getenv(&quot;R_CONFIG_ACTIVE&quot;) == &quot;rsconnect&quot; || params$prod) {  ##not relevant at the moment
   output_path &lt;- file.path(path_adam, &quot;data.rds&quot;)

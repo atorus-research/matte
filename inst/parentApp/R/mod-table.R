@@ -9,8 +9,9 @@ tableServer <- function(id, data, metadata) {
   moduleServer(
     id,
     function(input, output, session) {
+      selection <- strsplit(metadata$modules$table, ", ") %>% unlist()
        output$table <- renderReactable(
-          reactable(data |> select(metadata$modules$table))
+          reactable(data |> dplyr::select(!!selection))
        )
     }
   )

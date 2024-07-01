@@ -4,12 +4,19 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @noRd
-app_ui <- function(request) {
+app_ui <- function(input, output, session) {
   page_navbar(
     id = "page",
     title = "Parent Package",
-    plotUI("plot"),
-    tableUI("table")
+    theme = bs_theme(version = 4, bootswatch = "minty"), # Using a Bootswatch theme
+    nav_panel(
+      title = "Plot",
+      plotUI("plot"),
+    ),
+    nav_panel(
+      title = "Table",
+      tableUI("table")
+    )
   )
 }
 

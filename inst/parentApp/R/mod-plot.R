@@ -8,7 +8,13 @@ plotServer <- function(id, data, metadata) {
     id,
     function(input, output, session) {
        output$plot <- renderPlot(
-          data
+          ggplot() +
+            geom_point(data,
+                       mapping = aes(x = mpg,
+                                     y = hp,
+                                     color = am_fac)) +
+            theme_bw() +
+            theme(legend.title = element_blank())
        )
     }
   )

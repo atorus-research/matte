@@ -10,7 +10,7 @@ data:
   var6: hp_rank
 modules:
   plot:
-    xvar: var5
-    yvar: var6
-    col: var3
-  table: mpg, cyl, am, hp, mpg_rank, hp_rank
+    xvar: mpg
+    yvar: hp
+    col: am
+  table: mpg, cyl, am, hp, mpg_rank, hp_rank, am_fac
