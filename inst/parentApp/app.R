@@ -2,7 +2,7 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
-pkgload::load_all(path = "inst/parentApp", export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
+pkgload::load_all(path = ".", export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 options("golem.app.prod" = TRUE)
 run_app() # add parameters here (if any)
 
