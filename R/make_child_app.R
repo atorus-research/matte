@@ -1,17 +1,19 @@
 #' Make Child app from Parent app with modules
 #'
-#' @param parent_app_dir
-#' @param child_app_dir
-#' @param include_renv
-#' @param copy_jobs_dir
-#' @param job_file_type
-#' @param framework
-#' @param overwrite
+#' @param parent_app_dir `character` Path to existing parent app, including the parent app directory
+#' @param child_app_dir `character` Path to new child app, including the child app directory
+#' @param include_renv `logical` Include `renv` structure in child app or now. Default is `FALSE`
+#' @param copy_jobs_dir `logical` Copy the `jobs` directory from the parent app (`TRUE`)
+#'  or use jobs template in `matte/inst`. Default is `FALSE`
+#' @param include_meta_yaml `logical` Include the template metadata yaml file in the child app. Default is `TRUE`
+#' @param job_file_type `character` Type of job template to include ("Rmd" or "qmd"). Default is `Rmd`
+#' @param framework `character` App framework used for child. Options are "golem", "rhino" or "none". Default is "none"
+#' @param overwrite `logical` Allow function to overwrite existing child directory. Default is `FALSE`
 #'
-#' @return
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' make_child_app(parent_app_dir = "inst/parentApp",
 #'                child_app_dir = "~/childTest")
 #'
@@ -25,7 +27,7 @@
 #'                child_app_dir = "~/childTest3",
 #'                include_renv = TRUE,
 #'                framework = "golem")
-#'
+#' }
 #'
 
 # TODO: add logging
