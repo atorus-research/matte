@@ -1,5 +1,4 @@
 #' Make Child app from Parent app with modules
-#' Title
 #'
 #' @param parent_app_name
 #' @param parent_app_dir
@@ -27,6 +26,9 @@
 #'                child_app_dir = "~/childTest2",
 #'                copy_jobs_dir = FALSE)
 #'
+#'
+
+# TODO: add logging
 
 make_child_app <- function(parent_app_name, # do we need this?
                            parent_app_dir,
@@ -37,7 +39,7 @@ make_child_app <- function(parent_app_name, # do we need this?
                            job_file_type = "Rmd",
                            framework = "none",
                            overwrite = FALSE) {
-  #TODO: what if the path to parent is github? should that be an explicit argument or just detected?...not going to worry about this at the moment
+  #TODO: what if the path to parent is github? should that be an explicit argument or just detected? clone it into a tmp folder?
 
   ##create the child app path dir (if it doesn't exist)
   parent_app_dir_ <- normalizePath(parent_app_dir, winslash = "/")
@@ -75,6 +77,9 @@ make_child_app <- function(parent_app_name, # do we need this?
   file.copy(from = file.path(parent_app_dir_, "R", "app_server.R"),
             to   = file.path(child_app_dir_, "R", "app_server.R"),
             overwrite = overwrite)
+  file.copy(from = file.path(parent_app_dir_, "manifest.json"),
+            to   = file.path(child_app_dir_, "manifest.json"),
+            overwrite = overwrite)
 
 
   if(copy_jobs_dir) {
@@ -95,15 +100,13 @@ make_child_app <- function(parent_app_name, # do we need this?
 
  ## TODO: add framework-specific files
 
- ##not sure if this is the right approach for renv...
+ ##not sure if this is the right approach for renv... might need to do this once we are in the child app Rproj
   if(include_renv) {
-    renv::init()## maybe use renv::scaffold?
-    devtools::install_local(parent_app_dir_)
-    renv::snapshot()
+    renv::init(project = child_app_dir_)
   }
 
-  #update description
-  #usethis::use_package(parent_app_name)
+  #update description - maybe needs to be in a a setting where we are already in the child app Rproj?
+
 
   ##done!
 
