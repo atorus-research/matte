@@ -30,87 +30,131 @@
 
 # TODO: add logging
 
-make_child_app <- function(parent_app_name, # do we need this?
+make_child_app <- function(parent_app_name,
+                           # do we need this?
                            parent_app_dir,
-                           child_app_name, # do we need this?
+                           child_app_name,
+                           # do we need this?
                            child_app_dir,
                            include_renv = FALSE,
                            copy_jobs_dir = TRUE,
                            job_file_type = "Rmd",
                            framework = "none",
                            overwrite = FALSE) {
+
   #TODO: what if the path to parent is github? should that be an explicit argument or just detected? clone it into a tmp folder?
+
+  if (!job_file_type %in% c("Rmd", "qmd")) {
+    stop("`job_file_type` must be one of: 'Rmd' or 'qmd'")
+  }
+  if (!framework %in% c("none", "rhino", "golem")) {
+    stop("`framework` must be one of: 'none', 'golem' or 'rhino'")
+  }
 
   ##create the child app path dir (if it doesn't exist)
   parent_app_dir_ <- normalizePath(parent_app_dir, winslash = "/")
-  child_app_dir_ <- normalizePath(child_app_dir, winslash = "/") %>% suppressWarnings()
+  child_app_dir_ <-
+    normalizePath(child_app_dir, winslash = "/") %>% suppressWarnings()
 
   ## make sure all needed files/directories exist in parent_app
-  if(!file.exists(file.path(parent_app_dir_, "app.R")) ||
-     !file.exists(file.path(parent_app_dir_, "R", "app_ui.R")) ||
-     !file.exists(file.path(parent_app_dir_, "R", "app_server.R"))) {
-    stop(sprintf("%s must contain app.R, R/app_ui.R and R/app_server.R in order to be duplicated",
-                 parent_app_name))
+  if (!file.exists(file.path(parent_app_dir_, "app.R")) ||
+      !file.exists(file.path(parent_app_dir_, "R", "app_ui.R")) ||
+      !file.exists(file.path(parent_app_dir_, "R", "app_server.R"))) {
+    stop(
+      sprintf(
+        "%s must contain app.R, R/app_ui.R and R/app_server.R in order to be duplicated",
+        parent_app_name
+      )
+    )
   }
 
-  #create child app directory
-  if(file.exists(child_app_dir_) && !overwrite) {
-    stop(sprintf("The folder %s already exists. Please specify new folder, or specify `overwrite = TRUE`",
-                 child_app_dir_))
+  ## create child app directory
+  if (file.exists(child_app_dir_) && !overwrite) {
+    stop(
+      sprintf(
+        "The folder %s already exists. Please specify new folder, or specify `overwrite = TRUE`",
+        child_app_dir_
+      )
+    )
+  }
+  else if (job_file_type == "golem") {
+    golem::create_golem(child_app_dir_)
+  }
+  else if (job_file_type == "rhino") {
+    rhino::init(child_app_dir_)
   }
   else{
     dir.create(child_app_dir_)
   }
 
-  ##change working directory to child app and create R folder
-  #setwd(child_app_dir_)
+
+  ## create R folder
   dir.create(paste0(child_app_dir_, "/R"))
 
 
   ## start copying over all of the needed files from parent_app or templates
-  file.copy(from = file.path(parent_app_dir_, "app.R"),
-            to   = file.path(child_app_dir_, "app.R"),
-            overwrite = overwrite)
-  file.copy(from = file.path(parent_app_dir_, "R","app_ui.R"),
-            to   = file.path(child_app_dir_, "R", "app_ui.R"),
-            overwrite = overwrite)
-  file.copy(from = file.path(parent_app_dir_, "R", "app_server.R"),
-            to   = file.path(child_app_dir_, "R", "app_server.R"),
-            overwrite = overwrite)
-  file.copy(from = file.path(parent_app_dir_, "manifest.json"),
-            to   = file.path(child_app_dir_, "manifest.json"),
-            overwrite = overwrite)
+  file.copy(
+    from = file.path(parent_app_dir_, "app.R"),
+    to   = file.path(child_app_dir_, "app.R"),
+    overwrite = overwrite
+  )
+  file.copy(
+    from = file.path(parent_app_dir_, "R", "app_ui.R"),
+    to   = file.path(child_app_dir_, "R", "app_ui.R"),
+    overwrite = overwrite
+  )
+  file.copy(
+    from = file.path(parent_app_dir_, "R", "app_server.R"),
+    to   = file.path(child_app_dir_, "R", "app_server.R"),
+    overwrite = overwrite
+  )
+  if (file.exists(file.path(parent_app_dir_, "manifest.json"))) {
+    file.copy(
+      from = file.path(parent_app_dir_, "manifest.json"),
+      to   = file.path(child_app_dir_, "manifest.json"),
+      overwrite = overwrite
+    )
+  }
 
+## create jobs directory
 
-  if(copy_jobs_dir) {
+  if (copy_jobs_dir) {
     dir.create(paste0(child_app_dir_, "/jobs"))
-    file.copy(from = paste0(parent_app_dir_, "/jobs"),
-              to = child_app_dir_,
-              recursive = TRUE,
-              overwrite = overwrite)
+    file.copy(
+      from = paste0(parent_app_dir_, "/jobs"),
+      to = child_app_dir_,
+      recursive = TRUE,
+      overwrite = overwrite
+    )
   }
   else{
     dir.create(paste0(child_app_dir_, "/jobs"))
     #copy over the template
-    file.copy(from = system.file("inst", paste0("batch_template.", job_file_type)),
-              to = file.path(paste0(child_app_dir_, "/jobs"), paste0("batch_template.", job_file_type)),
-              overwrite = overwrite)
+    file.copy(
+      from = system.file("inst", paste0("batch_template.", job_file_type)),
+      to = file.path(
+        paste0(child_app_dir_, "/jobs"),
+        paste0("batch_template.", job_file_type)
+      ),
+      overwrite = overwrite
+    )
 
   }
 
- ## TODO: add framework-specific files
-
- ##not sure if this is the right approach for renv... might need to do this once we are in the child app Rproj
-  if(include_renv) {
-    renv::init(project = child_app_dir_)
+  ##not sure if this is the right approach for renv... might need to do this once we are in the child app Rproj
+  if (include_renv) {
+    renv::init(project = child_app_dir_, restart = FALSE)
   }
 
-  #update description - maybe needs to be in a a setting where we are already in the child app Rproj?
+  #create dependencies.R
+  fileCon <- file(file.path(child_app_dir_, "R", "dependencies.R"))
+  writeLines(c(paste("#' @import", parent_app_name),
+               "#'",
+               "NULL"),
+             con = fileCon)
+  close(fileCon)
 
-
-  ##done!
-
-
+  file.path(child_app_dir_, "R", "dependencies.R")
 
 }
 

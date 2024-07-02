@@ -2,3 +2,7 @@
 
 export(make_child_app)
 export(use_batch_jobs)
+importFrom(golem,create_golem)
+importFrom(renv,init)
+importFrom(rhino,init)
+importFrom(usethis,use_package)
