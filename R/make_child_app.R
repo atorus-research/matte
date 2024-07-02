@@ -1,8 +1,6 @@
 #' Make Child app from Parent app with modules
 #'
-#' @param parent_app_name
 #' @param parent_app_dir
-#' @param child_app_name
 #' @param child_app_dir
 #' @param include_renv
 #' @param copy_jobs_dir
@@ -14,30 +12,29 @@
 #' @export
 #'
 #' @examples
-#' make_child_app(parent_app_name = "parentApp",
-#'                parent_app_dir = "inst/parentApp",
-#'                child_app_name = "childTest",
+#' make_child_app(parent_app_dir = "inst/parentApp",
 #'                child_app_dir = "~/childTest")
 #'
 #'
-#' make_child_app(parent_app_name = "parentApp",
-#'                parent_app_dir = "inst/parentApp",
-#'                child_app_name = "childTest2",
+#' make_child_app(parent_app_dir = "inst/parentApp",
 #'                child_app_dir = "~/childTest2",
-#'                copy_jobs_dir = FALSE)
+#'                copy_jobs_dir = FALSE,
+#'                include_renv = TRUE)
+#'
+#' make_child_app(parent_app_dir = "inst/parentApp",
+#'                child_app_dir = "~/childTest3",
+#'                include_renv = TRUE,
+#'                framework = "golem")
 #'
 #'
 
 # TODO: add logging
 
-make_child_app <- function(parent_app_name,
-                           # do we need this?
-                           parent_app_dir,
-                           child_app_name,
-                           # do we need this?
+make_child_app <- function(parent_app_dir,
                            child_app_dir,
                            include_renv = FALSE,
-                           copy_jobs_dir = TRUE,
+                           copy_jobs_dir = FALSE,
+                           include_meta_yaml = TRUE,
                            job_file_type = "Rmd",
                            framework = "none",
                            overwrite = FALSE) {
@@ -63,7 +60,16 @@ make_child_app <- function(parent_app_name,
     stop(
       sprintf(
         "%s must contain app.R, R/app_ui.R and R/app_server.R in order to be duplicated",
-        parent_app_name
+        basename(parent_app_dir_)
+      )
+    )
+  }
+
+  if (copy_jobs_dir && !file.exists(file.path(parent_app_dir_, "jobs"))) {
+    stop(
+      sprintf(
+        "%s must contain jobs folder when copy_jobs_dir = TRUE",
+        basename(parent_app_dir_)
       )
     )
   }
@@ -118,8 +124,7 @@ make_child_app <- function(parent_app_name,
     )
   }
 
-## create jobs directory
-
+  ## create jobs directory
   if (copy_jobs_dir) {
     dir.create(paste0(child_app_dir_, "/jobs"))
     file.copy(
@@ -131,7 +136,7 @@ make_child_app <- function(parent_app_name,
   }
   else{
     dir.create(paste0(child_app_dir_, "/jobs"))
-    #copy over the template
+    #copy over the templates
     file.copy(
       from = system.file("inst", paste0("batch_template.", job_file_type)),
       to = file.path(
@@ -140,82 +145,35 @@ make_child_app <- function(parent_app_name,
       ),
       overwrite = overwrite
     )
-
   }
 
-  ##not sure if this is the right approach for renv... might need to do this once we are in the child app Rproj
+  ## if they want a meta yaml file, but do not have one in the parent app jobs folder, copy it from template
+  if (include_meta_yaml && all(!grepl(".yaml", list.files(paste0(parent_app_dir_, "/jobs"))))) {
+    file.copy(
+      from = system.file("inst", "meta_template.yaml"),
+      to = file.path(
+        paste0(child_app_dir_, "/jobs"), "meta.yaml"
+      ),
+      overwrite = overwrite
+    )
+  }
+
+  ## not sure if this is the right approach for renv...
+  ## might need to do this once we are in the child app Rproj, but works for now
   if (include_renv && framework != "rhino") {
     renv::init(project = child_app_dir_, restart = FALSE)
   }
 
   #create dependencies.R
   fileCon <- file(file.path(child_app_dir_, "R", "dependencies.R"))
-  writeLines(c(paste("#' @import", parent_app_name),
+  writeLines(c(paste("#' @import", basename(parent_app_dir_)),
                "#'",
                "NULL"),
              con = fileCon)
   close(fileCon)
 
-  file.path(child_app_dir_, "R", "dependencies.R")
+  ## update .Rbuildignore to ignore jobs folder
+  write_union(path = file.path(child_app_dir_, ".Rbuildignore"),
+              lines = "^jobs")
 
 }
-
-
-# ##github parent app
-#
-# make_child_app_gh <- function(parent_app_repo,
-#                               parent_app_branch,
-#                            child_app_name, # do we need this?
-#                            child_app_dir,
-#                            github_username,
-#                            github_path,
-#                            include_renv = FALSE,
-#                            include_jobs_dir = TRUE,
-#                            format = "none",
-#                            overwrite = FALSE) {
-#
-#   ## make sure all needed files/directories exist in parent_app
-#
-#   #what if path is github? should that be an explicit argument or just detected?
-#
-#   ##create the child app path dir (if it doesn't exist)
-#   parent_app_dir_ <- normalizePath(parent_app_dir)
-#   child_app_dir_ <- normalizePath(child_app_dir)
-#
-#   if(exists(child_app_dir_) && !overwrite) {
-#     stop()
-#   }
-#   else{
-#     create.dir(child_app_dir_)
-#   }
-#
-#   ##change working directory to child app
-#   setwd(child_app_dir_)
-#
-#
-#   ## start copying over all of the needed files from parent_app
-#   file.copy()
-#
-#   ##create all other files/directories from template
-#
-#   if(include_jobs_dir) {
-#     dir.create(paste0())
-#     #copy over the templates
-#     file.copy()
-#
-#   }
-#
-#   if(include_renv) {
-#     renv::init()## maybe use renv::scaffold?
-#     devtools::install_local(parent_app_dir_)
-#     renv::snapshot()
-#   }
-#
-#   #update description
-#   usethis::use_package(parent_app_name)
-#
-#   ##done!
-#
-#
-#
-# }

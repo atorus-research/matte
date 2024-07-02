@@ -5,3 +5,5 @@
 pkgload::load_all(path = "inst/parentApp", export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 options("golem.app.prod" = TRUE)
 run_app() # add parameters here (if any)
+
+

@@ -1,0 +1,24 @@
+## include metadata here about the child app. datapath is required if you
+## plan to use metadata with your data_prep.Rmd file
+meta:
+  study: ABC-123
+  datapath: "/path/to/data"
+## this data section allows you to map data column names. In this example,
+## `col1` would be the column names in the original data and `var1_1` would
+## be the name used in the app.
+data:
+  dataset1:
+    var1_1: col1
+    var1_2: col2
+    var1_3: col3
+    var1_4: col4
+    var1_5: col5
+    var1_6: col6
+  dataset2:
+    var2_1: col1
+    var2_2: col2
+    var2_3: col3
+    var2_4: col4
+    var2_5: col5
+    var2_6: col6
+
