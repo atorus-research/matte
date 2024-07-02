@@ -77,10 +77,10 @@ make_child_app <- function(parent_app_name,
       )
     )
   }
-  else if (job_file_type == "golem") {
-    golem::create_golem(child_app_dir_)
+  else if (framework == "golem") {
+    golem::create_golem(child_app_dir_, open = FALSE)
   }
-  else if (job_file_type == "rhino") {
+  else if (framework == "rhino") {
     rhino::init(child_app_dir_)
   }
   else{
@@ -89,30 +89,32 @@ make_child_app <- function(parent_app_name,
 
 
   ## create R folder
-  dir.create(paste0(child_app_dir_, "/R"))
+  if (!file.exists(paste0(child_app_dir_, "/R"))) {
+    dir.create(paste0(child_app_dir_, "/R"))
+  }
 
 
   ## start copying over all of the needed files from parent_app or templates
   file.copy(
     from = file.path(parent_app_dir_, "app.R"),
     to   = file.path(child_app_dir_, "app.R"),
-    overwrite = overwrite
+    overwrite = TRUE
   )
   file.copy(
     from = file.path(parent_app_dir_, "R", "app_ui.R"),
     to   = file.path(child_app_dir_, "R", "app_ui.R"),
-    overwrite = overwrite
+    overwrite = TRUE
   )
   file.copy(
     from = file.path(parent_app_dir_, "R", "app_server.R"),
     to   = file.path(child_app_dir_, "R", "app_server.R"),
-    overwrite = overwrite
+    overwrite = TRUE
   )
   if (file.exists(file.path(parent_app_dir_, "manifest.json"))) {
     file.copy(
       from = file.path(parent_app_dir_, "manifest.json"),
       to   = file.path(child_app_dir_, "manifest.json"),
-      overwrite = overwrite
+      overwrite = TRUE
     )
   }
 
@@ -142,7 +144,7 @@ make_child_app <- function(parent_app_name,
   }
 
   ##not sure if this is the right approach for renv... might need to do this once we are in the child app Rproj
-  if (include_renv) {
+  if (include_renv && framework != "rhino") {
     renv::init(project = child_app_dir_, restart = FALSE)
   }
 
