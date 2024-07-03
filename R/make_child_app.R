@@ -92,7 +92,7 @@ make_child_app <- function(parent_app_dir,
     rhino::init(child_app_dir_)
   }
   else{
-    dir.create(child_app_dir_)
+    usethis::create_package(child_app_dir_, open = FALSE)
   }
 
 
@@ -163,7 +163,7 @@ make_child_app <- function(parent_app_dir,
   ## not sure if this is the right approach for renv...
   ## might need to do this once we are in the child app Rproj, but works for now
   if (include_renv && framework != "rhino") {
-    renv::init(project = child_app_dir_, restart = FALSE)
+    renv::scaffold(project = child_app_dir_)
   }
 
   #create dependencies.R
@@ -173,6 +173,7 @@ make_child_app <- function(parent_app_dir,
                "NULL"),
              con = fileCon)
   close(fileCon)
+  withr::with_dir(child_app_dir_, devtools::document())
 
   ## update .Rbuildignore to ignore jobs folder
   write_union(path = file.path(child_app_dir_, ".Rbuildignore"),
