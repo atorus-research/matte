@@ -1,0 +1,33 @@
+---
+title: Data Prep
+params:
+  prod: FALSE
+---
+
+```{r}
+library(dplyr)
+library(readr)
+
+path_adam <- '/sasdata/Data/Development/BDM/R3767/R3767-ONC/R3767-ONC-2011/data/ADaM/'  ##not relevant at the moment
+
+mtcars_new <- mtcars %>%
+  mutate(mpg_rank = dense_rank(desc(mpg)),
+         hp_rank = dense_rank(desc(hp)),
+         am_fac = case_when(am == 0 ~ "Automatic",
+                            am == 1 ~ "Manual",
+                            T ~ NA_character_)) 
+
+mtcars_new$am_fac <- factor(mtcars_new$am_fac, c("Automatic", "Manual"))
+
+if (Sys.getenv("R_CONFIG_ACTIVE") == "rsconnect" || params$prod) {  ##not relevant at the moment
+  output_path <- file.path(path_adam, "data.rds")
+} else {
+  output_path <- file.path(getwd(), "data.rds")
+}
+
+
+
+saveRDS(mtcars_new, output_path)
+print(paste("File published to", output_path))
+
+```

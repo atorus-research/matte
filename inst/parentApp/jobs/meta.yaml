@@ -1,0 +1,16 @@
+meta:
+  study: R3767-ONC-2011
+  datapath: "/jobs/"
+data:
+  var1: mpg
+  var2: cyl
+  var3: am
+  var4: hp
+  var5: mpg_rank
+  var6: hp_rank
+modules:
+  plot:
+    xvar: mpg
+    yvar: hp
+    col: am
+  table: mpg, cyl, am, hp, mpg_rank, hp_rank, am_fac
