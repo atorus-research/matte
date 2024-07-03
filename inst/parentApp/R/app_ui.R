@@ -3,6 +3,7 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @export
 #' @noRd
 app_ui <- function(input, output, session) {
   page_navbar(
@@ -28,6 +29,7 @@ app_ui <- function(input, output, session) {
 #'
 #' @import shiny
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
+#' @export
 #' @noRd
 golem_add_external_resources <- function() {
   add_resource_path(

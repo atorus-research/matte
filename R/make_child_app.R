@@ -91,8 +91,8 @@ make_child_app <- function(parent_app_dir,
   else if (framework == "rhino") {
     rhino::init(child_app_dir_)
   }
-  else{
-    usethis::create_package(child_app_dir_, open = FALSE)
+  else {
+    dir.create(child_app_dir_)
   }
 
 
@@ -103,11 +103,6 @@ make_child_app <- function(parent_app_dir,
 
 
   ## start copying over all of the needed files from parent_app or templates
-  file.copy(
-    from = file.path(parent_app_dir_, "app.R"),
-    to   = file.path(child_app_dir_, "app.R"),
-    overwrite = TRUE
-  )
   file.copy(
     from = file.path(parent_app_dir_, "R", "app_ui.R"),
     to   = file.path(child_app_dir_, "R", "app_ui.R"),
@@ -122,6 +117,24 @@ make_child_app <- function(parent_app_dir,
     file.copy(
       from = file.path(parent_app_dir_, "manifest.json"),
       to   = file.path(child_app_dir_, "manifest.json"),
+      overwrite = TRUE
+    )
+  }
+  ## add the app.R templates
+  if (framework != "rhino") {
+    file.copy(
+      from = system.file(paste0("app_template_",framework,".R"),
+                         package = "matte"),
+      to   = file.path(child_app_dir_, "app.R"),
+      overwrite = TRUE
+    )
+  }
+  ## add the main.R template for rhino
+  else {
+    file.copy(
+      from = system.file("main_template_rhino.R",
+                         package = "matte"),
+      to   = file.path(child_app_dir_, "R", "main.R"),
       overwrite = TRUE
     )
   }
@@ -140,7 +153,8 @@ make_child_app <- function(parent_app_dir,
     dir.create(paste0(child_app_dir_, "/jobs"))
     #copy over the templates
     file.copy(
-      from = system.file("inst", paste0("batch_template.", job_file_type)),
+      from = system.file("inst", paste0("batch_template.", job_file_type),
+                         package = "matte"),
       to = file.path(
         paste0(child_app_dir_, "/jobs"),
         paste0("batch_template.", job_file_type)
@@ -152,7 +166,8 @@ make_child_app <- function(parent_app_dir,
   ## if they want a meta yaml file, but do not have one in the parent app jobs folder, copy it from template
   if (include_meta_yaml && all(!grepl(".yaml", list.files(paste0(parent_app_dir_, "/jobs"))))) {
     file.copy(
-      from = system.file("inst", "meta_template.yaml"),
+      from = system.file("inst", "meta_template.yaml",
+                         package = "matte"),
       to = file.path(
         paste0(child_app_dir_, "/jobs"), "meta.yaml"
       ),
@@ -160,8 +175,7 @@ make_child_app <- function(parent_app_dir,
     )
   }
 
-  ## not sure if this is the right approach for renv...
-  ## might need to do this once we are in the child app Rproj, but works for now
+  ## creates renv scaffolding, but user will need to snapshot for their app
   if (include_renv && framework != "rhino") {
     renv::scaffold(project = child_app_dir_)
   }
@@ -173,7 +187,6 @@ make_child_app <- function(parent_app_dir,
                "NULL"),
              con = fileCon)
   close(fileCon)
-  withr::with_dir(child_app_dir_, devtools::document())
 
   ## update .Rbuildignore to ignore jobs folder
   write_union(path = file.path(child_app_dir_, ".Rbuildignore"),
