@@ -77,6 +77,13 @@ make_child_app <- function(parent_app_dir,
   }
 
   ## create child app directory
+
+  if (file.exists(child_app_dir_) && overwrite) {
+    warning(sprintf(
+      "The child app folder, %s already exists. Overwriting the directory now.",
+      child_app_dir_
+    ))
+  }
   if (file.exists(child_app_dir_) && !overwrite) {
     stop(
       sprintf(
@@ -153,7 +160,7 @@ make_child_app <- function(parent_app_dir,
     dir.create(paste0(child_app_dir_, "/jobs"))
     #copy over the templates
     file.copy(
-      from = system.file("inst", paste0("batch_template.", job_file_type),
+      from = system.file(paste0("batch_template.", job_file_type),
                          package = "matte"),
       to = file.path(
         paste0(child_app_dir_, "/jobs"),
@@ -166,7 +173,7 @@ make_child_app <- function(parent_app_dir,
   ## if they want a meta yaml file, but do not have one in the parent app jobs folder, copy it from template
   if (include_meta_yaml && all(!grepl(".yaml", list.files(paste0(parent_app_dir_, "/jobs"))))) {
     file.copy(
-      from = system.file("inst", "meta_template.yaml",
+      from = system.file("meta_template.yaml",
                          package = "matte"),
       to = file.path(
         paste0(child_app_dir_, "/jobs"), "meta.yaml"
