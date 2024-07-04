@@ -1,6 +1,6 @@
 #' Make Child app from Parent app with modules
 #'
-#' @param parent_app_dir `character` Path to existing parent app, including the parent app directory
+#' @param parent_github_repo `character` github repo of the parent in the form of "parent/repo"
 #' @param child_app_dir `character` Path to new child app, including the child app directory
 #' @param include_renv `logical` Include `renv` structure in child app or now. Default is `FALSE`
 #' @param copy_jobs_dir `logical` Copy the `jobs` directory from the parent app (`TRUE`)
@@ -32,7 +32,7 @@
 
 # TODO: add logging
 
-make_child_app <- function(parent_app_dir,
+make_child_app <- function(parent_github_repo,
                            child_app_dir,
                            include_renv = FALSE,
                            copy_jobs_dir = FALSE,
@@ -50,28 +50,31 @@ make_child_app <- function(parent_app_dir,
     stop("`framework` must be one of: 'none', 'golem' or 'rhino'")
   }
 
+  top_level_files <- gh::gh("/repos/:owner/:repo/contents", owner = "atorus-research", repo = "matteParentPkg")
+  r_folder_files <- gh::gh("/repos/:owner/:repo/contents/R", owner = "atorus-research", repo = "matteParentPkg")
+  jobs_folder_files <- gh::gh("/repos/:owner/:repo/contents/jobs", owner = "atorus-research", repo = "matteParentPkg")
+
   ##create the child app path dir (if it doesn't exist)
-  parent_app_dir_ <- normalizePath(parent_app_dir, winslash = "/")
-  child_app_dir_ <-
-    normalizePath(child_app_dir, winslash = "/") %>% suppressWarnings()
+  parent_pkg_name <- strsplit(parent_github_repo, "/")[[1]][[2]]
+  child_app_dir_ <- normalizePath(child_app_dir, winslash = "/") %>% suppressWarnings()
 
   ## make sure all needed files/directories exist in parent_app
-  if (!file.exists(file.path(parent_app_dir_, "app.R")) ||
-      !file.exists(file.path(parent_app_dir_, "R", "app_ui.R")) ||
-      !file.exists(file.path(parent_app_dir_, "R", "app_server.R"))) {
+  if (length(Filter(function(x){x$name == "app.R"}, top_level_files)) == 0 ||
+      length(Filter(function(x){x$name == "app_ui.R"}, r_folder_files)) == 0 ||
+      length(Filter(function(x){x$name == "app_server.R"}, r_folder_files)) == 0) {
     stop(
       sprintf(
         "%s must contain app.R, R/app_ui.R and R/app_server.R in order to be duplicated",
-        basename(parent_app_dir_)
+        parent_pkg_name
       )
     )
   }
 
-  if (copy_jobs_dir && !file.exists(file.path(parent_app_dir_, "jobs"))) {
+  if (copy_jobs_dir && length(Filter(function(x){x$name == "jobs"}, top_level_files)) == 0) {
     stop(
       sprintf(
         "%s must contain jobs folder when copy_jobs_dir = TRUE",
-        basename(parent_app_dir_)
+        parent_pkg_name
       )
     )
   }
@@ -133,7 +136,9 @@ make_child_app <- function(parent_app_dir,
   if (!file.exists(renviron_file)) {
     file.create(renviron_file)
     fileCon <- file(renviron_file)
-    writeLines(c("DEVELOPMENT_ENVIRONMENT=DEV"),
+    writeLines(c("DEVELOPMENT_ENVIRONMENT=DEV",
+                 "DEVELOPMENT_DATA_LOCATION_TYPE=LOCAL",
+                 "DEVELOPMENT_DATA_LOCATION=data"),
                con = fileCon)
     close(fileCon)
   }
@@ -145,31 +150,51 @@ make_child_app <- function(parent_app_dir,
 
 
   ## start copying over all of the needed files from parent_app or templates
+  ## We're going to download from github into a temp location and copy it over
+
+
+  ## Pull parent repo info from github
+  tmp_folder <- tempdir()
+
+  download.file("https://raw.githubusercontent.com/atorus-research/matteParentPkg/main/R/app_ui.R", file.path(tmp_folder, "app_ui.R"))
   file.copy(
-    from = file.path(parent_app_dir_, "R", "app_ui.R"),
+    from = file.path(tmp_folder, "app_ui.R"),
     to   = file.path(child_app_dir_, "R", "app_ui.R"),
     overwrite = TRUE
   )
+
+  download.file("https://raw.githubusercontent.com/atorus-research/matteParentPkg/main/R/app_server.R", file.path(tmp_folder, "app_server.R"))
   file.copy(
-    from = file.path(parent_app_dir_, "R", "app_server.R"),
+    from = file.path(tmp_folder, "app_server.R"),
     to   = file.path(child_app_dir_, "R", "app_server.R"),
     overwrite = TRUE
   )
-  if (file.exists(file.path(parent_app_dir_, "manifest.json"))) {
+
+
+  if (length(Filter(function(x){x$name == "manifest.json"}, top_level_files)) == 1) {
+
+    download.file("https://raw.githubusercontent.com/atorus-research/matteParentPkg/main/manifest.json", file.path(tmp_folder, "manifest.json"))
     file.copy(
-      from = file.path(parent_app_dir_, "manifest.json"),
+      from = file.path(tmp_folder, "manifest.json"),
       to   = file.path(child_app_dir_, "manifest.json"),
       overwrite = TRUE
     )
   }
   ## add the app.R templates
   if (framework != "rhino") {
+
     file.copy(
       from = system.file(paste0("app_template_",framework,".R"),
                          package = "matte"),
       to   = file.path(child_app_dir_, "app.R"),
       overwrite = TRUE
     )
+
+    # app.R installs parent package
+    file_content <- readLines(file.path(child_app_dir_, "app.R"))
+    file_content <- gsub("PARENT_PACKAGE_REPO", parent_github_repo, file_content)
+    file_content <- gsub("PARENT_PACKAGE", parent_pkg_name, file_content)
+    writeLines(file_content, file.path(child_app_dir_, "app.R"))
   }
   ## add the main.R template for rhino
   else {
@@ -184,12 +209,19 @@ make_child_app <- function(parent_app_dir,
   ## create jobs directory
   if (copy_jobs_dir) {
     dir.create(paste0(child_app_dir_, "/jobs"))
-    file.copy(
-      from = paste0(parent_app_dir_, "/jobs"),
-      to = child_app_dir_,
-      recursive = TRUE,
-      overwrite = overwrite
-    )
+
+    dir.create(file.path(tmp_folder, "jobs"))
+
+    for (jobs_file in jobs_folder_files) {
+      download.file(jobs_file$download_url, file.path(tmp_folder, "jobs", jobs_file$name))
+
+      file.copy(
+        from = file.path(tmp_folder, "jobs", jobs_file$name),
+        to = file.path(child_app_dir_, "jobs"),
+        recursive = TRUE,
+        overwrite = overwrite
+      )
+    }
   }
   else{
     dir.create(paste0(child_app_dir_, "/jobs"))
@@ -206,7 +238,7 @@ make_child_app <- function(parent_app_dir,
   }
 
   ## if they want a meta yaml file, but do not have one in the parent app jobs folder, copy it from template
-  if (include_meta_yaml && all(!grepl(".yaml", list.files(paste0(parent_app_dir_, "/jobs"))))) {
+  if (include_meta_yaml && length(Filter(function(x){grepl(".yaml", x$name)}, jobs_folder_files)) == 0) {
     file.copy(
       from = system.file("meta_template.yaml",
                          package = "matte"),
@@ -224,7 +256,7 @@ make_child_app <- function(parent_app_dir,
 
   #create dependencies.R
   fileCon <- file(file.path(child_app_dir_, "R", "dependencies.R"))
-  writeLines(c(paste("#' @import", basename(parent_app_dir_)),
+  writeLines(c(paste("#' @import", parent_pkg_name),
                "#'",
                "NULL"),
              con = fileCon)
