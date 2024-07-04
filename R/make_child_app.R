@@ -102,6 +102,32 @@ make_child_app <- function(parent_app_dir,
     dir.create(child_app_dir_)
   }
 
+  ## create Rproj
+  rproj_file <- paste0(child_app_dir_, "/", basename(child_app_dir), ".Rproj")
+  if (!file.exists(rproj_file)) {
+    file.create(rproj_file)
+    fileCon <- file(rproj_file)
+    writeLines(c("Version: 1.0",
+                 "RestoreWorkspace: No",
+                 "SaveWorkspace: No",
+                 "AlwaysSaveHistory: Default",
+                 "EnableCodeIndexing: Yes",
+                 "UseSpacesForTab: Yes",
+                 "NumSpacesForTab: 2",
+                 "Encoding: UTF-8",
+                 "RnwWeave: Sweave",
+                 "LaTeX: pdfLaTeX",
+                 "AutoAppendNewline: Yes",
+                 "StripTrailingWhitespace: Yes",
+                 "LineEndingConversion: Posix",
+                 "BuildType: Package",
+                 "PackageUseDevtools: Yes",
+                 "PackageInstallArgs: --no-multiarch --with-keep.source",
+                 "PackageRoxygenize: rd,collate,namespace"),
+               con = fileCon)
+    close(fileCon)
+  }
+
 
   ## create R folder
   if (!file.exists(paste0(child_app_dir_, "/R"))) {
