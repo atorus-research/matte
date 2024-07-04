@@ -128,6 +128,15 @@ make_child_app <- function(parent_app_dir,
     close(fileCon)
   }
 
+  ## create Renviron (dev/prod detection)
+  renviron_file <- paste0(child_app_dir_, "/", ".Renviron")
+  if (!file.exists(renviron_file)) {
+    file.create(renviron_file)
+    fileCon <- file(renviron_file)
+    writeLines(c("DEVELOPMENT_ENVIRONMENT=DEV"),
+               con = fileCon)
+    close(fileCon)
+  }
 
   ## create R folder
   if (!file.exists(paste0(child_app_dir_, "/R"))) {
