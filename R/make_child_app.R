@@ -56,7 +56,7 @@ make_child_app <- function(parent_github_repo,
 
   ##create the child app path dir (if it doesn't exist)
   parent_pkg_name <- strsplit(parent_github_repo, "/")[[1]][[2]]
-  child_app_dir_ <- normalizePath(child_app_dir, winslash = "/") %>% suppressWarnings()
+  child_app_dir_ <- normalizePath(child_app_dir, winslash = "/") |> suppressWarnings()
 
   ## make sure all needed files/directories exist in parent_app
   if (length(Filter(function(x){x$name == "app.R"}, top_level_files)) == 0 ||
