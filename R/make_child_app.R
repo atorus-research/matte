@@ -99,7 +99,7 @@ make_child_app <- function(parent_github_repo,
     golem::create_golem(child_app_dir_, open = FALSE)
   }
   else if (framework == "rhino") {
-    rhino::init(child_app_dir_)
+    # rhino::init(child_app_dir_)
   }
   else {
     dir.create(child_app_dir_)
