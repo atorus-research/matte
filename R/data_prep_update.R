@@ -15,6 +15,12 @@ get_updated_time <- function(data_loc) {
 
 #' @export
 run_data_prep_local_data_folder <- function(dev_data_loc) {
+
+  if (length(list.files(dev_data_loc)) == 0) {
+    message("There is no data. Skipping data processing")
+    return(invisible(NULL))
+  }
+
   # Look for the file that has file name & last updated
   data_update_log <- file.path("jobs", "data_update_log.csv")
 
