@@ -14,19 +14,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' make_child_app(parent_app_dir = "inst/parentApp",
-#'                child_app_dir = "~/childTest")
-#'
-#'
-#' make_child_app(parent_app_dir = "inst/parentApp",
-#'                child_app_dir = "~/childTest2",
-#'                copy_jobs_dir = FALSE,
-#'                include_renv = TRUE)
-#'
-#' make_child_app(parent_app_dir = "inst/parentApp",
-#'                child_app_dir = "~/childTest3",
-#'                include_renv = TRUE,
-#'                framework = "golem")
+#'  make_child_app(parent_github_repo = "atorus-research/matteParentPkg",
+#'                 child_app_dir = "~/childTest",
+#'                 copy_jobs_dir = TRUE,
+#'                 include_renv = FALSE,
+#'                 include_meta_yaml = TRUE,
+#'                 job_file_type = "Rmd",
+#'                 overwrite = FALSE,
+#'                 framework = "none")
 #' }
 #'
 
