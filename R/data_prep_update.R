@@ -36,7 +36,11 @@ run_data_prep_local_data_folder <- function(dev_data_loc) {
   current_data_info <- get_updated_time(dev_data_loc)
 
   # Conditionally run data prep
-  if (nrow(current_data_info) != nrow(data_update_log)) {
+  if (nrow(current_data_info) > nrow(data_update_log)) {
+    message("New data has been added! Running data prep")
+    rmarkdown::render("jobs/data_prep.Rmd")
+  } else if (nrow(current_data_info) < nrow(data_update_log)) {
+    message("Data has been removed! Running data prep")
     rmarkdown::render("jobs/data_prep.Rmd")
   } else {
     joined <- data_update_log |>
@@ -51,9 +55,11 @@ run_data_prep_local_data_folder <- function(dev_data_loc) {
       nrow()
 
     if (n_updates > 0) {
+      message("Data has been updated! Running data prep")
       rmarkdown::render("jobs/data_prep.Rmd")
     }
   }
+  return(invisible(NULL))
 }
 
 
