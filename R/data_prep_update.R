@@ -57,6 +57,8 @@ run_data_prep_local_data_folder <- function(dev_data_loc) {
     if (n_updates > 0) {
       message("Data has been updated! Running data prep")
       rmarkdown::render("jobs/data_prep.Rmd")
+    } else {
+      message("No change in data, skipping data prep")
     }
   }
   return(invisible(NULL))
