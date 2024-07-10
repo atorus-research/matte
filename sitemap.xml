@@ -1,11 +1,11 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
-<url><loc>/404.html</loc></url>
-<url><loc>/LICENSE-text.html</loc></url>
-<url><loc>/LICENSE.html</loc></url>
-<url><loc>/authors.html</loc></url>
-<url><loc>/index.html</loc></url>
-<url><loc>/reference/index.html</loc></url>
-<url><loc>/reference/make_child_app.html</loc></url>
-<url><loc>/reference/use_batch_jobs.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/404.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/LICENSE-text.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/LICENSE.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/authors.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/index.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/reference/index.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/reference/make_child_app.html</loc></url>
+<url><loc>https://atorus-research.github.io/matte/reference/use_batch_jobs.html</loc></url>
 </urlset>
 
