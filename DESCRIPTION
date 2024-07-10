@@ -1,11 +1,36 @@
 Package: matte
-Title: What the Package Does (One Line, Title Case)
+Title: Opinionated Backend and Reusability Focused Considerations for Shiny
 Version: 0.0.0.9000
+Description: Purposefully simple helper functions, tools, and a framework for creating reusable applications fit for production in clinical systems.
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    c(
+    person(given = "Maya",
+           family = "Gans",
+           email = "maya.gans@atorusresearch.com",
+           role = c("aut", "cre")),
+    person(given = "Laura",
+           family = "Maxwell",
+           email = "laura.maxwell@atorusresearch.com",
+           role = "aut"),
+    person(given = "Jiwan",
+           family = "Heo",
+           email = "jiwan.heo@atorusresearch.com",
+           role = "aut"),
+    person(given = "Atorus Research LLC",
+           role = "cph"),
+    person(given = "Mike",
+           family = "Stackhouse",
+           role = c("ctb"),
+           email = "mike.stackhouse@atorusresearch.com",
+           comment = c(ORCID = "0000-0001-6030-723X"))
+    )
 License: MIT + file LICENSE
+Depends: R (>= 3.5.0)
+Imports:
+    renv,
+    golem,
+    rhino,
+    usethis
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
