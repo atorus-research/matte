@@ -1,0 +1,73 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# { matte } - an Enterprise Shiny Manifesto
+
+And the not so glamorous back-end considerations for Shiny
+
+## The Parent-Child App Relationship
+
+A common paradigm we’ve come across is the desire to create a Shiny app
+but have it used across different datasets with different scoped access
+to those datasets. It’s also common for the data to need some
+transformation prior to being used in the application. For these reasons
+we propose an opinionated paradigm of creating a package of Shiny
+modules, then using that package in child repositories, each with their
+own data.
+
+Creating child repositories for each application instance solves the
+problem of changing and editing code in a single place, then persisting
+those changes to multiple endpoints, while still allowing for
+customization at the child application level. This is important in
+industries such as pharma because we can go through validation cycles
+and use certain versions of the parent package for some clinical
+studies, and experimental versions for others. It also allows for bug
+fixes in a central location, rather than forking a Shiny app and needing
+to make changes in multiple places.
+
+## A Consistent Data Structure
+
+The child repository has an `app.R` file at the root level, and ui and
+server function that call modules from the parent. This doesn’t limit
+child applications to the parent structure, but the modules from the
+parent should assume as certain data structure to be used within the
+child applications. We propose creating a single object and storing it
+as `data.rds`. In the `{matte}` paradigm we create a `jobs` folder with
+a `data_prep.Rmd` - this takes the raw data needed for the application
+and manipulates it to be the generic structure needed for all apps. But
+what if your data is different between child repositories, you ask? We
+also include a `meta.yaml` file, a list of key value pairs for mapping
+columns to the application.
+
+## An Example
+
+This can all seem very abstract, in `inst/examples` we’ve included an
+example of this paradigm:
+
+`parentpkg` is a package with `mod-chart` and `mod-table` `child1` is a
+shiny application that uses `parentpkg`’s modules as well as themeing
+with a data preperation file from `mtcars` `child2` is a shiny
+application that uses `iris`
+
+`child1` and `child2` look and feel like they come from the same
+ecosystem with the same branding, but this structure allows for further
+customization like including a third module custom to `child2` that may
+not be in `child1`.
+
+## Can I use this with other Shiny frameworks?
+
+Because the `jobs` endpoint is secondary to the application itself, you
+can use the `{matte}` paradigm with children applications that are
+Rhino, Golem, or native Shiny! The only limitation is that the parent
+application must be a package so that you can call it within the
+children.
+
+## Installation and Use
+
+You can install the development version of matte from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("atorus-research/matte")
+```
