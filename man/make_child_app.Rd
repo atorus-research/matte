@@ -5,7 +5,7 @@
 \title{Make Child app from Parent app with modules}
 \usage{
 make_child_app(
-  parent_app_dir,
+  parent_github_repo,
   child_app_dir,
   include_renv = FALSE,
   copy_jobs_dir = FALSE,
@@ -16,7 +16,7 @@ make_child_app(
 )
 }
 \arguments{
-\item{parent_app_dir}{\code{character} Path to existing parent app, including the parent app directory}
+\item{parent_github_repo}{\code{character} github repo of the parent in the form of "parent/repo"}
 
 \item{child_app_dir}{\code{character} Path to new child app, including the child app directory}
 
